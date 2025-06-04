@@ -1,16 +1,49 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, User } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../store/hook';
 import { logoutUser } from '../store/slices/authSlice';
 
 const Header = () => {
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, isLoading: authLoading } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    navigate('/login');
+  const { user, isAuthenticated, isLoading: authLoading, hasFetchedUser } = useAppSelector(
+    (state) => state.auth
+  );
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const renderRoleBasedLinks = () => {
+    if (!user) return null;
+
+    switch (user.type) {
+      case 'SELLER':
+        return (
+          <Link to="/create-product">
+            <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Create Product
+            </button>
+          </Link>
+        );
+      case 'BUYER':
+      case 'SUPERADMIN':
+        return (
+          <Link to="/products">
+            <button className="px-4 py-2 rounded-md border border-green-600 text-green-600 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500">
+              View Products
+            </button>
+          </Link>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -20,8 +53,8 @@ const Header = () => {
           <Link to="/" className="text-2xl font-bold text-primary">
             MultiStore
           </Link>
-          
-          {/* <div className="flex-1 max-w-md mx-8">
+
+          <div className="flex-1 max-w-md mx-8">
             <div className="relative">
               <input
                 type="text"
@@ -30,44 +63,34 @@ const Header = () => {
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
-          </div> */}
+          </div>
 
           <div className="flex items-center space-x-4">
-            {/* Show loading state or render links based on user/authLoading */}
-            {authLoading ? (
-              <div>Loading...</div> // Or a spinner
-            ) : user ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Hi, {user.username}</span>
-                <Link to="/profile">
-                  <button className="relative">
-                    <User className="h-5 w-5" />
-                  </button>
-                </Link>
-                {user.type === 'SUPERADMIN' && (
-                  <Link to="/admin">
-                    <button className="relative">
-                      Admin
-                    </button>
-                  </Link>
-                )}
-                <button onClick={handleLogout} className="relative">
+            {!hasFetchedUser ? (
+              <div>Loading...</div>
+            ) : isAuthenticated && user ? (
+              <>
+                {renderRoleBasedLinks()}
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-md border border-red-600 text-red-600 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
                   Logout
                 </button>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center space-x-2">
+              <>
                 <Link to="/login">
-                  <button className="relative">
+                  <button className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500">
                     Login
                   </button>
                 </Link>
                 <Link to="/register">
-                  <button className="relative">
+                  <button className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500">
                     Register
                   </button>
                 </Link>
-              </div>
+              </>
             )}
           </div>
         </div>

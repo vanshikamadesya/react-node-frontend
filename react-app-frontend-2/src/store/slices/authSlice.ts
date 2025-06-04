@@ -4,13 +4,14 @@ import type {
   LoginCredentials,
   RegisterCredentials,
 } from "../../types";
-import {authApi} from "../../services/authAPI";
+import { authApi } from "../../services/authAPI";
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  hasFetchedUser: false,
 };
 
 export const loginUser = createAsyncThunk(
@@ -115,6 +116,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.error = null;
       })
+
       // Get current user
       .addCase(getCurrentUser.pending, (state) => {
         state.isLoading = true;
@@ -123,10 +125,13 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.user = action.payload;
         state.isAuthenticated = true;
+        state.hasFetchedUser = true; 
       })
       .addCase(getCurrentUser.rejected, (state) => {
         state.isLoading = false;
         state.isAuthenticated = false;
+        state.user = null;
+        state.hasFetchedUser = true; 
       });
   },
 });

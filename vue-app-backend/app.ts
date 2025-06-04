@@ -20,8 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 // Add CORS middleware
 app.use(
   cors({
-    origin: true, // Replace with your frontend domain, e.g., "http://localhost:3000"
-    credentials: true, // Allows cookies to be sent
+    origin: "http://localhost:5173",
+    credentials: true, 
   })
 );
 

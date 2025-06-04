@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hook";
-import {  clearError } from "../store/slices/authSlice";
+import {  clearError, registerUser } from "../store/slices/authSlice";
 import * as Label from "@radix-ui/react-label";
 import * as Toast from "@radix-ui/react-toast";
 // import * as AlertDialog from "@radix-ui/react-alert-dialog";
@@ -29,15 +29,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     dispatch(clearError());
     
     try {
-      const response = await authApi.register(formData);
-      if (response.data) {
-        navigate('/dashboard');
+      const resultAction = await dispatch(registerUser(formData));
+      if (registerUser.fulfilled.match(resultAction)) {
+        navigate("/dashboard");
       }
-    } catch (error: any) {
-      
-      if (error.response?.data?.message) {
-        dispatch(clearError());
-      }
+    } catch (error) {
+      console.error("Registration error:", error);
     }
   };
 
@@ -50,7 +47,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg ml-[700px]">
+      <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
 
         {error && (

@@ -109,7 +109,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onCancel }) => {
 
   return (
     <div className="min-h-screen flex justify-end items-center pr-24">
-      <div className="w-[580px] bg-gray-100 rounded-lg p-16 shadow-lg ml-[850px]">
+      <div className="w-[580px] bg-gray-100 rounded-lg p-16 shadow-lg mx-auto">
         <h2 className="text-2xl font-bold mb-6">
           {product ? "Edit Product" : "Create New Product"}
         </h2>

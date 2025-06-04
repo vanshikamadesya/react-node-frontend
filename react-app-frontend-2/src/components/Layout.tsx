@@ -5,8 +5,8 @@ const Layout = () => {
   return (
     <>
       <Header />
-      <main className="flex justify-center mx-auto">
-        <div className="flex-grow w-full max-w-screen-xl">
+      <main className="flex justify-center items-center mx-auto ">
+        <div className="flex-grow w-full">
           <Outlet />
         </div>
       </main>

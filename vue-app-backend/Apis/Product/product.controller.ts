@@ -138,13 +138,13 @@ export const createProduct = (req: Request, res: Response) => {
     if (err instanceof MulterError) {
       return res.status(400).json({
         message: "File upload error",
-        error: err.message
+        error: err.message 
       });
     }
 
     console.log(2, 'Multer processed. req.body:', req.body, 'req.file:', req.file);
 
-    //create object
+    //create object 
     const product = new Product({
       name: req.body.name,
       price: parseFloat(req.body.price),

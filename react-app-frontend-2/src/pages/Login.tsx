@@ -18,7 +18,7 @@ const Login: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     email: "",
     password: "",
   });
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(clearError());
@@ -38,7 +38,7 @@ const Login: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   return (
     <Toast.Provider>
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg ml-[700px]">
+        <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg ">
           <h2 className="text-2xl font-bold text-center mb-6 bg-red">Login</h2>
 
           {error && (
