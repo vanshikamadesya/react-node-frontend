@@ -145,7 +145,10 @@ const ProductList: React.FC = () => {
 
           <div className="p-6 bg-gray-50 border-t border-gray-200 flex space-x-2">
             <button
-              onClick={() => navigate(`/edit-product/${product.id}`)}
+              onClick={() => {
+                console.log("Navigating to edit product with ID:", product.id);
+                navigate(`/edit-product/${product.id}`);
+              }}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               Edit

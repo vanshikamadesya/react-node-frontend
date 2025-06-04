@@ -1,9 +1,9 @@
-import Product from './product.model';
+import Product from './product.model.js';
 import { isValidObjectId, SortOrder } from 'mongoose';
 import multer from 'multer';
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { IProduct } from '../../types';
+import { IProduct } from '../../types/index.js';
 import { MulterError } from 'multer';
 import { FilterQuery } from 'mongoose';
 

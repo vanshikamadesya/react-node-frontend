@@ -10,19 +10,14 @@ const EditProduct: React.FC = () => {
   const dispatch = useAppDispatch();
   const { selectedProduct, isLoading, error } = useAppSelector((state) => state.products);
 
+  console.log("Product ID from useParams:", id);
+
   useEffect(() => {
     if (id) {
       dispatch(fetchProduct(id));
     }
   }, [dispatch, id]);
 
-  const handleCancel = () => {
-    navigate('/products');
-  };
-
-  const handleSuccess = () => {
-    navigate('/products');
-  };
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -35,8 +30,6 @@ const EditProduct: React.FC = () => {
   return (
     <ProductForm
       product={selectedProduct}
-      onCancel={handleCancel}
-      onSuccess={handleSuccess}
     />
   );
 };

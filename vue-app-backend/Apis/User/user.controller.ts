@@ -1,7 +1,7 @@
-import User from './user.model';
+import User from './user.model.js';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
-import sendResetPasswordEmail from '../../utils/emailService';
+import sendResetPasswordEmail from '../../utils/emailService.js';
 import { Request, Response, NextFunction } from 'express';
 
 // exports.register = async (req, res) => {
@@ -192,6 +192,17 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
       message: "Logged out successfully",
     });
   });
+};
+
+// Add the getCurrentUser controller function
+export const getCurrentUser = (req: Request, res: Response) => {
+  if (req.user) {
+    // If the user is authenticated (req.user is populated by the auth middleware)
+    res.status(200).json({ user: req.user });
+  } else {
+    // If req.user is not populated, the user is not authenticated
+    res.status(401).json({ message: "Not authenticated" });
+  }
 };
 
 // Request password reset

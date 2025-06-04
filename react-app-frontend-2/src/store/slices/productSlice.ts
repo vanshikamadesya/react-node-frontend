@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { ProductState } from "../../types";
 import { productApi } from "../../services/productAPI";
+import type { Product } from "../../types";
 
 const initialState: ProductState = {
   products: [],
@@ -100,9 +101,9 @@ const productSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchProducts.fulfilled, (state, action) => {
+      .addCase(fetchProducts.fulfilled, (state, action: { payload: Product[] }) => {
         state.isLoading = false;
-        state.products = action.payload;
+        state.products = action.payload.map((product: Product) => ({...product, id: product._id}));
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.isLoading = false;
@@ -110,22 +111,23 @@ const productSlice = createSlice({
       })
       // Fetch single product
       .addCase(fetchProduct.fulfilled, (state, action) => {
-        state.selectedProduct = action.payload;
+        state.selectedProduct = {...action.payload, id: action.payload._id};
       })
       // Create product
       .addCase(createProduct.fulfilled, (state, action) => {
-        state.products.push(action.payload);
+        state.products.push({...action.payload, id: action.payload._id});
       })
       // Update product
       .addCase(updateProduct.fulfilled, (state, action) => {
+        const updatedProduct = {...action.payload, id: action.payload._id};
         const index = state.products.findIndex(
-          (p) => p.id === action.payload.id
+          (p) => p.id === updatedProduct.id
         );
         if (index !== -1) {
-          state.products[index] = action.payload;
+          state.products[index] = updatedProduct;
         }
-        if (state.selectedProduct?.id === action.payload.id) {
-          state.selectedProduct = action.payload;
+        if (state.selectedProduct?.id === updatedProduct.id) {
+          state.selectedProduct = updatedProduct;
         }
       })
       // Delete product

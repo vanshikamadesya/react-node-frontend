@@ -32,13 +32,23 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
   }, [isAuthenticated, authLoading, navigate, user]);
 
   useEffect(() => {
+    console.log("ProductForm useEffect - product prop:", product);
     if (product) {
       setFormData({
-        name: product.name,
-        description: product.description,
-        price: product.price.toString(),
-        category: product.category,
-        stock: product.stock.toString(),
+        name: product.name ?? "",
+        description: product.description ?? "",
+        price: product.price?.toString() ?? "",
+        category: product.category ?? "",
+        stock: product.stock?.toString() ?? "",
+      });
+      setProductImage(null);
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        stock: "",
       });
       setProductImage(null);
     }

@@ -26,7 +26,7 @@ const ForgetPassword: React.FC = () => {
 
   return (
     <div className="min-h-screen flex justify-end items-center pr-24">
-      <div className="w-[400px] h-[400px] bg-gray-100 rounded-lg p-12 shadow-lg ml-[900px] space-y-8">
+      <div className="w-[400px] h-[400px] bg-gray-100 rounded-lg p-12 shadow-lg mx-auto space-y-8">
         <h2 className="text-3xl font-bold text-center">Reset Password</h2>
 
         {error && (

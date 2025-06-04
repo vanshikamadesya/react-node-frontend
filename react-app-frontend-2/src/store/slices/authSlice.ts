@@ -65,6 +65,18 @@ export const getCurrentUser = createAsyncThunk(
   }
 );
 
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async ({ token, newPassword }: { token: string, newPassword: string }, { rejectWithValue }) => {
+    try {
+      const response = await authApi.resetPassword(token, newPassword);
+      return response.data; // Assuming backend returns some confirmation
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Reset password failed");
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,

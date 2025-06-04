@@ -7,6 +7,7 @@ import ProductForm from '../components/ProductForm';
 import ProductList from '../components/ProductList';
 import Dashboard from '../pages/Dashboard';
 import EditProduct from '../components/EditProduct';
+import ResetPassword from '../pages/ResetPassword';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
       { 
         path: "forgot-password", 
         element: <ForgetPassword/>
+      },
+      {
+        path: "reset-password/:token",
+        element: <ResetPassword/>
       },
       { 
         path: "create-product", 

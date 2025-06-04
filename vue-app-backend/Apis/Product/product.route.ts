@@ -1,18 +1,18 @@
 import express, { Router, RequestHandler } from 'express';
 // const ProductController = require("./product.controller");
 
-import auth from '../../Middlewares/auth';
-import roleAccess from '../../Middlewares/roleAccess';
-import { UserType } from '../../types';
+import auth from '../../Middlewares/auth.js';
+import roleAccess from '../../Middlewares/roleAccess.js';
+import { UserType } from '../../types/index.js';
 
-import { getProducts, createProduct, searchProducts, getProductsByuserId, getSingleProduct, deleteProduct, editProduct } from './product.controller';
+import { getProducts, createProduct, searchProducts, getProductsByuserId, getSingleProduct, deleteProduct, editProduct } from './product.controller.js';
 
 const router: Router = express.Router();
 
 router.get(
   "/getProducts",
   auth as RequestHandler,
-  roleAccess([UserType.SUPERADMIN, UserType.BUYER]) as RequestHandler,
+  roleAccess([UserType.SUPERADMIN, UserType.BUYER, UserType.SELLER]) as RequestHandler,
   getProducts as RequestHandler
 );
 router.get(

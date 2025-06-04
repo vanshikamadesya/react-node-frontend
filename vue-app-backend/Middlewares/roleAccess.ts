@@ -1,5 +1,5 @@
 import { request, response } from 'express';
-import { UserType } from '../types';
+import { UserType } from '../types/index.js';
 import { Request, Response, NextFunction } from 'express';
 
 declare module 'express' {
@@ -60,6 +60,8 @@ const isSeller = (req: Request, res: Response, next: NextFunction) => {
 
 const roleAccess = (allowedRoles: UserType[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    console.log("User Type:", req.user?.type);
+    console.log("Allowed Roles:", allowedRoles); 
     if (req.user && allowedRoles.includes(req.user.type)) {
       next();
     } else {

@@ -1,7 +1,21 @@
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../store/hook';
+import { getCurrentUser } from '../store/slices/authSlice';
 
 const Layout = () => {
+  const dispatch = useAppDispatch();
+  const hasFetchedUser = useAppSelector(state => state.auth.hasFetchedUser);
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+
+  if (!hasFetchedUser) {
+    return <div>Loading application...</div>; // Or a better spinner
+  }
+
   return (
     <>
       <Header />
