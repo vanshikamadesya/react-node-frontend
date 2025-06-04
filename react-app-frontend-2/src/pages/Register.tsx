@@ -7,11 +7,7 @@ import * as Toast from "@radix-ui/react-toast";
 // import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { authApi } from "../services/authAPI";
 
-interface RegisterFormProps {
-  onSwitchToLogin: () => void;
-}
-
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
+const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
@@ -125,7 +121,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             Already have an account?{" "}
             <button
               type="button"
-              onClick={onSwitchToLogin}
+              onClick={() => navigate('/login')}
               className="text-blue-600 hover:text-blue-800 underline"
             >
               Login here

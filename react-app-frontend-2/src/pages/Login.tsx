@@ -5,11 +5,7 @@ import * as Label from "@radix-ui/react-label";
 import * as Toast from "@radix-ui/react-toast";
 import { useNavigate } from "react-router-dom";
 
-interface LoginFormProps {
-  onSwitchToRegister: () => void;
-}
-
-const Login: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
+const Login: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useAppSelector((state) => state.auth);
@@ -108,7 +104,7 @@ const Login: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
               Don't have an account?{" "}
               <button
                 type="button"
-                onClick={onSwitchToRegister}
+                onClick={() => navigate('/register')}
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 Register here

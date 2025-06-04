@@ -15,11 +15,11 @@ const router = createBrowserRouter([
     children: [
       { 
         path: "login", 
-        element: <Login onSwitchToRegister={() => window.location.href = '/register'} />
+        element: <Login />
       },
       { 
         path: "register", 
-        element: <Register onSwitchToLogin={() => window.location.href = '/login'} />
+        element: <Register />
       },
       { 
         path: "forgot-password", 
@@ -27,11 +27,11 @@ const router = createBrowserRouter([
       },
       { 
         path: "create-product", 
-        element: <ProductForm onCancel={() => window.location.href = '/'} onSuccess={() => window.location.href = '/'} />
+        element: <ProductForm />
       },
       { 
         path: "products", 
-        element: <ProductList onEditProduct={(id) => window.location.href = `/edit-product/${id}`} />
+        element: <ProductList />
       },
       { 
         path: "dashboard", 

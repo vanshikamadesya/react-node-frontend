@@ -5,13 +5,8 @@ import * as Label from "@radix-ui/react-label";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import type { Product } from "../types";
 import { useNavigate } from "react-router-dom";
-interface ProductFormProps {
-  product?: Product | null;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, onCancel }) => {
+const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useAppSelector((state) => state.products);
@@ -36,7 +31,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onCancel }) => {
     }
   }, [isAuthenticated, authLoading, navigate, user]);
 
- 
   useEffect(() => {
     if (product) {
       setFormData({
@@ -50,15 +44,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onCancel }) => {
     }
   }, [product]);
 
-
   if (authLoading) {
     return <div>Loading...</div>;
   }
   if (!isAuthenticated || !user) {
     return null; // Will redirect due to the useEffect above
   }
-
-  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,13 +264,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onCancel }) => {
                 : product
                 ? "Update Product"
                 : "Create Product"}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
-              Cancel
             </button>
           </div>
         </form>
