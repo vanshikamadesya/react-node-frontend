@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import sendResetPasswordEmail from '../../utils/emailService.js';
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'node:crypto';
 
 // exports.register = async (req, res) => {
 //   try {
@@ -217,7 +218,7 @@ export const forgotPass = async (req: Request, res: Response, next: NextFunction
       });
     }
     // Generate random reset token
-    const resetToken = require('crypto').randomBytes(32).toString("hex");
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
     // Save token and expiry to user doc
     user.resetPasswordToken = resetToken;
@@ -246,11 +247,14 @@ export const forgotPass = async (req: Request, res: Response, next: NextFunction
 // Reset password with token
 export const resetPass = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { token } = req.params;
+    // Original: const { token } = req.params;
     const { newPassword } = req.body;
 
+    // Change: Get token from req.body and ensure it's used consistently
+    const { token: resetTokenFromBody, newPassword: newPasswordFromBody } = req.body;
+
     const user = await User.findOne({
-      resetPasswordToken: token,
+      resetPasswordToken: resetTokenFromBody, // Use token from body
       resetPasswordExpires: { $gt: Date.now() },
     });
 
@@ -262,7 +266,7 @@ export const resetPass = async (req: Request, res: Response, next: NextFunction)
 
     //Fix: Change getSalt to genSalt
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const hashedPassword = await bcrypt.hash(newPasswordFromBody, salt);
 
     //Update user password and clear reset token fields
     user.password = hashedPassword;

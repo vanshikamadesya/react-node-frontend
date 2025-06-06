@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IProduct } from '../../types';
+import { IProduct } from '../../types/index.js';
 
 export interface IProductDocument extends Omit<IProduct, '_id'>, Document { }
 

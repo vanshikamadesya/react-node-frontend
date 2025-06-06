@@ -47,14 +47,7 @@ const Header = () => {
           </>
         )}
   
-        {/* Optional: Add admin-specific links in future */}
-        {/* {user.type === 'SUPERADMIN' && (
-          <Link to="/admin-panel">
-            <button className="px-4 py-2 rounded-md border border-yellow-600 text-yellow-600 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-              Admin Panel
-            </button>
-          </Link>
-        )} */}
+       
       </>
     );
   };
@@ -67,16 +60,19 @@ const Header = () => {
             MultiStore
           </Link>
 
-          {/* <div className="flex-1 max-w-md mx-8">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full px-4 py-2 border rounded-lg pl-10 focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+          {/* Wrap search bar with conditional rendering */}
+          {isAuthenticated && user && (
+            <div className="flex-1 max-w-md mx-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-full px-4 py-2 border rounded-lg pl-10 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-          </div> */}
+          )}
 
           <div className="flex items-center space-x-4">
             {!hasFetchedUser ? (

@@ -3,12 +3,12 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
-import User from "./Apis/User/user.model";
+import User from "./Apis/User/user.model.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
-import { IUser } from "./types";
-import PaymentRoutes from './Apis/Payment/payment.route';
+import { IUser } from "./types/index.js";
+import PaymentRoutes from './Apis/Payment/payment.route.js';
 
 dotenv.config();
 const app = express();
@@ -109,8 +109,8 @@ app.post("/refresh-session", (req, res) => {
   }
 });
 
-import UserRoutes from "./Apis/User/user.route";
-import ProductRoutes from "./Apis/Product/product.route";
+import UserRoutes from "./Apis/User/user.route.js";
+import ProductRoutes from "./Apis/Product/product.route.js";
 
 // app.get("/health", (res: Response) => {
 //   return res.status(200).json({

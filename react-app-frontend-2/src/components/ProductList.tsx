@@ -12,6 +12,9 @@ const ProductList: React.FC = () => {
   );
   const navigate = useNavigate();
 
+  // Access user and isAuthenticated from auth slice
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
@@ -144,49 +147,54 @@ const ProductList: React.FC = () => {
           </div>
 
           <div className="p-6 bg-gray-50 border-t border-gray-200 flex space-x-2">
-            <button
-              onClick={() => {
-                console.log("Navigating to edit product with ID:", product.id);
-                navigate(`/edit-product/${product.id}`);
-              }}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
-              Edit
-            </button>
-            <AlertDialog.Root>
-              <AlertDialog.Trigger asChild>
-                <button className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                  Delete
+            {/* Conditionally render buttons based on user role */}
+            {user?.type !== 'BUYER' && (
+              <>
+                <button
+                  onClick={() => {
+                    console.log("Navigating to edit product with ID:", product.id);
+                    navigate(`/edit-product/${product.id}`);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  Edit
                 </button>
-              </AlertDialog.Trigger>
-              <AlertDialog.Portal>
-                <AlertDialog.Overlay className="fixed inset-0 bg-black/50" />
-                <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                  <AlertDialog.Title className="text-lg font-semibold mb-2">
-                    Delete Product
-                  </AlertDialog.Title>
-                  <AlertDialog.Description className="text-gray-600 mb-4">
-                    Are you sure you want to delete this product? This action
-                    cannot be undone.
-                  </AlertDialog.Description>
-                  <div className="flex justify-end space-x-2">
-                    <AlertDialog.Cancel asChild>
-                      <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                        Cancel
-                      </button>
-                    </AlertDialog.Cancel>
-                    <AlertDialog.Action asChild>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      >
-                        Delete
-                      </button>
-                    </AlertDialog.Action>
-                  </div>
-                </AlertDialog.Content>
-              </AlertDialog.Portal>
-            </AlertDialog.Root>
+                <AlertDialog.Root>
+                  <AlertDialog.Trigger asChild>
+                    <button className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                      Delete
+                    </button>
+                  </AlertDialog.Trigger>
+                  <AlertDialog.Portal>
+                    <AlertDialog.Overlay className="fixed inset-0 bg-black/50" />
+                    <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                      <AlertDialog.Title className="text-lg font-semibold mb-2">
+                        Delete Product
+                      </AlertDialog.Title>
+                      <AlertDialog.Description className="text-gray-600 mb-4">
+                        Are you sure you want to delete this product? This action
+                        cannot be undone.
+                      </AlertDialog.Description>
+                      <div className="flex justify-end space-x-2">
+                        <AlertDialog.Cancel asChild>
+                          <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            Cancel
+                          </button>
+                        </AlertDialog.Cancel>
+                        <AlertDialog.Action asChild>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                          >
+                            Delete
+                          </button>
+                        </AlertDialog.Action>
+                      </div>
+                    </AlertDialog.Content>
+                  </AlertDialog.Portal>
+                </AlertDialog.Root>
+              </>
+            )}
           </div>
         </div>
       ))}

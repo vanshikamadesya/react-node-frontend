@@ -65,6 +65,18 @@ export const getCurrentUser = createAsyncThunk(
   }
 );
 
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      const response = await authApi.forgotPassword(email);
+      return response.data; // Assuming backend returns some confirmation
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Forgot password failed");
+    }
+  }
+);
+
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async ({ token, newPassword }: { token: string, newPassword: string }, { rejectWithValue }) => {
@@ -144,6 +156,20 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         state.hasFetchedUser = true; 
+      })
+
+      // Forgot Password
+      .addCase(forgotPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null; // Clear any previous errors
+      })
+      .addCase(forgotPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });

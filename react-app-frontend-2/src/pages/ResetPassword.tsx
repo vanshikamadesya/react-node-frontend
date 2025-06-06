@@ -14,12 +14,15 @@ const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLocalError(null); // Clear local error on new submission
     if (password !== confirmPassword) {
       // You might want to set a local error state here
       console.error("Passwords do not match");
+      setLocalError("Passwords do not match");
       return;
     }
 
@@ -36,6 +39,7 @@ const ResetPassword: React.FC = () => {
         setSuccess(true);
     } catch (err) {
         console.error("Failed to reset password:", err);
+        // The error from the thunk is already managed by the authSlice and available in `error`
     }
   };
 
@@ -45,9 +49,17 @@ const ResetPassword: React.FC = () => {
         <div className="w-[400px] bg-gray-100 rounded-lg p-12 shadow-lg space-y-6">
           <h2 className="text-2xl font-bold text-center">Reset Password</h2>
 
+          {/* Display backend errors from Redux slice */}
           {error && (
-            <Toast.Root className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <Toast.Root open={!!error} className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               <Toast.Description>{error}</Toast.Description>
+            </Toast.Root>
+          )}
+
+          {/* Display local password mismatch error */}
+          {localError && (
+            <Toast.Root open={!!localError} className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <Toast.Description>{localError}</Toast.Description>
             </Toast.Root>
           )}
 
