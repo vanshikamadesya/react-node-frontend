@@ -8,42 +8,47 @@ import ProductList from '../components/ProductList';
 import Dashboard from '../pages/Dashboard';
 import EditProduct from '../components/EditProduct';
 import ResetPassword from '../pages/ResetPassword';
+import LandingPage from '../pages/LandingPage';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      { 
-        path: "login", 
+      {
+        index: true,
+        element: <LandingPage />
+      },
+      {
+        path: "login",
         element: <Login />
       },
-      { 
-        path: "register", 
+      {
+        path: "register",
         element: <Register />
       },
-      { 
-        path: "forgot-password", 
+      {
+        path: "forgot-password",
         element: <ForgetPassword/>
       },
       {
         path: "reset-password/:token",
         element: <ResetPassword/>
       },
-      { 
-        path: "create-product", 
+      {
+        path: "create-product",
         element: <ProductForm />
       },
-      { 
-        path: "products", 
+      {
+        path: "products",
         element: <ProductList />
       },
-      { 
-        path: "dashboard", 
+      {
+        path: "dashboard",
         element: <Dashboard/>
       },
-      { 
-        path: "edit-product/:id", 
+      {
+        path: "edit-product/:id",
         element: <EditProduct/>
       },
     ],
