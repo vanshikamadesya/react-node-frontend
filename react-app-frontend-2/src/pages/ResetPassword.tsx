@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hook";
 import { resetPassword, clearError } from "../store/slices/authSlice";
@@ -15,6 +15,15 @@ const ResetPassword: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        navigate("/login");
+      }, 3000); // Redirect after 3 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [success, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +54,7 @@ const ResetPassword: React.FC = () => {
 
   return (
     <Toast.Provider>
-      <div className="flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="w-[400px] bg-gray-100 rounded-lg p-12 shadow-lg space-y-6">
           <h2 className="text-2xl font-bold text-center">Reset Password</h2>
 
@@ -66,12 +75,13 @@ const ResetPassword: React.FC = () => {
           {success ? (
             <div className="text-center space-y-4">
               <p className="text-green-600">Your password has been reset successfully.</p>
-              <button
+              {/* The button is now optional for manual navigation if the automatic redirect is too slow */}
+              {/* <button
                 onClick={() => navigate("/login")}
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 Return to Login
-              </button>
+              </button> */}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

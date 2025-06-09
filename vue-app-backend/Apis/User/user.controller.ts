@@ -219,6 +219,7 @@ export const forgotPass = async (req: Request, res: Response, next: NextFunction
     }
     // Generate random reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
+    console.log
 
     // Save token and expiry to user doc
     user.resetPasswordToken = resetToken;
@@ -247,18 +248,17 @@ export const forgotPass = async (req: Request, res: Response, next: NextFunction
 // Reset password with token
 export const resetPass = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Original: const { token } = req.params;
-    const { newPassword } = req.body;
+    const { token } = req.params; // Get token from URL parameters
+    const { newPassword } = req.body; // Get newPassword from request body
 
-    // Change: Get token from req.body and ensure it's used consistently
-    const { token: resetTokenFromBody, newPassword: newPasswordFromBody } = req.body;
-
+    console.log("token", token)
     const user = await User.findOne({
-      resetPasswordToken: resetTokenFromBody, // Use token from body
+      resetPasswordToken: token, // Use the token from req.params
       resetPasswordExpires: { $gt: Date.now() },
     });
 
     if (!user) {
+      console.log("No user found or token expired");
       return res.status(400).json({
         message: "Password reset token is invalid or has expired",
       });
@@ -266,7 +266,7 @@ export const resetPass = async (req: Request, res: Response, next: NextFunction)
 
     //Fix: Change getSalt to genSalt
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPasswordFromBody, salt);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     //Update user password and clear reset token fields
     user.password = hashedPassword;

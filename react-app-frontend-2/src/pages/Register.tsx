@@ -27,7 +27,7 @@ const RegisterForm: React.FC = () => {
     try {
       const resultAction = await dispatch(registerUser(formData));
       if (registerUser.fulfilled.match(resultAction)) {
-        navigate("/dashboard");
+        navigate("/login");
       }
     } catch (error) {
       console.error("Registration error:", error);

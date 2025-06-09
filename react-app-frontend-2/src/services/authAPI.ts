@@ -27,7 +27,7 @@ export const authApi = {
     api.post("/user/forgot-password", { email }),
 
   resetPassword: (token: string, newPassword: string) =>
-    api.post('/user/resetpassword', { token, newPassword }),
+    api.post(`/user/reset-password/${token}`, { newPassword }),
 
   refreshSession: () =>
     api.post("/refresh-session"),
