@@ -13,6 +13,9 @@ import PaymentRoutes from './Apis/Payment/payment.route.js';
 dotenv.config();
 const app = express();
 
+// Temporary console.log to debug SESSION_SECRET
+console.log("SESSION_SECRET:", process.env.SESSION_SECRET);
+
 // Add body-parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

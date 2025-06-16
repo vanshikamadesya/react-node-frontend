@@ -17,7 +17,7 @@ const RegisterForm: React.FC = () => {
     username: "",
     email: "",
     password: "",
-    type: "SELLER" as const,
+    type: "BUYER" as const,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

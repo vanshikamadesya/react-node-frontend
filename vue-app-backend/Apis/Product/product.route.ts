@@ -29,7 +29,7 @@ router.get(
 router.get(
   "/getProduct/:id",
   auth as RequestHandler,
-  roleAccess([UserType.SELLER]) as RequestHandler,
+  roleAccess([UserType.SELLER, UserType.BUYER]) as RequestHandler,
   getSingleProduct as RequestHandler
 );
 router.post(

@@ -5,20 +5,20 @@ import { RouterProvider } from 'react-router-dom';
 import router from './router/index.js';
 
 function App() {
-  // const dispatch = useAppDispatch();
-  // const hasFetchedUser = useAppSelector(state => state.auth.hasFetchedUser);
+  const dispatch = useAppDispatch();
+  const hasFetchedUser = useAppSelector(state => state.auth.hasFetchedUser);
 
-  // useEffect(() => {
-  //   dispatch(getCurrentUser());
-  // }, [dispatch]);
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
 
-  // if (!hasFetchedUser) {
-  //   return <div>Loading...</div>; // or a better spinner
-  // }
+  if (!hasFetchedUser) {
+    return <div>Loading...</div>; // or a better spinner
+  }
 
   return (
-    // <RouterProvider router={router} />
-    <></> // App component is now just a placeholder or can be removed
+    <RouterProvider router={router} />
+    // <></> // App component is now just a placeholder or can be removed
   );
 }
 

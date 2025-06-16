@@ -9,6 +9,8 @@ import Dashboard from '../pages/Dashboard';
 import EditProduct from '../components/EditProduct';
 import ResetPassword from '../pages/ResetPassword';
 import LandingPage from '../pages/LandingPage';
+import PaymentPage from '../pages/PaymentPage';
+import PaymentSuccess from '../pages/PaymentSuccess';
 
 const router = createBrowserRouter([
   {
@@ -51,6 +53,15 @@ const router = createBrowserRouter([
         path: "edit-product/:id",
         element: <EditProduct/>
       },
+      {
+        path: "/payment",
+        element: <PaymentPage />
+      },
+      {
+        path: "/payment-success",
+        element: <PaymentSuccess/>
+      }
+     
     ],
   },
 ]);

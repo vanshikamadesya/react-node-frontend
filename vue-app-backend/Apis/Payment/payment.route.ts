@@ -1,8 +1,8 @@
 import express, { Router, RequestHandler } from 'express';
-import auth from '../../Middlewares/auth';
-import roleAccess from '../../Middlewares/roleAccess';
-import { UserType } from '../../types';
-import { createPaymentIntent, handleWebhook } from './payment.controller';
+import auth from '../../Middlewares/auth.js';
+import roleAccess from '../../Middlewares/roleAccess.js';
+import { UserType } from '../../types/index.js';
+import { createPaymentIntent, handleWebhook } from './payment.controller.js';
 
 const router: Router = express.Router();
 

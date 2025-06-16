@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hook";
-import { fetchProducts, deleteProduct } from "../store/slices/productSlice";
+import { fetchProducts, deleteProduct, fetchProduct } from "../store/slices/productSlice";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import type { Product } from "../types";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,52 @@ const ProductList: React.FC = () => {
   const handleDelete = async (id: string) => {
     await dispatch(deleteProduct(id));
   };
+
+  const handlePay = async (productId: string) => {
+    if (!isAuthenticated) {
+      alert("Please log in to make a payment.");
+      navigate("/login"); // Redirect to login page
+      return;
+    }
+    try {
+      const product = await dispatch(fetchProduct(productId)).unwrap();
+  
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/payment/create-payment-intent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', 
+        body: JSON.stringify({
+          amount: product.price,
+          currency: 'inr',
+        }),
+      });
+      
+  
+      const data = await response.json();
+  
+      if (!data.success) throw new Error(data.message || 'Payment initiation failed');
+  
+      localStorage.setItem("clientSecret", data.clientSecret);
+      localStorage.setItem("selectedProduct", JSON.stringify(product));
+  
+      navigate("/payment");
+    } catch (error) {
+      console.error("Failed to initiate payment:", error);
+    }
+  };
+  
+
+  // const handlePay = async (productId: string) => {
+  //   try {
+  //     await dispatch(fetchProduct(productId)).unwrap();
+  //     navigate("/payment");
+  //   } catch (error) {
+  //     console.error("Failed to fetch product for payment:", error);
+  //     // Optionally, show an error message to the user
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -68,7 +114,7 @@ const ProductList: React.FC = () => {
   return (
     <div className=" mt-12 py-8 flex flex-col lg:flex-row gap-8">
       {/* Filter Sidebar */}
-      <aside className="w-full lg:w-64 flex-shrink-0 bg-white rounded-lg shadow-lg p-6">
+      <aside className="w-full lg:w-80 flex-shrink-0 bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-xl font-bold mb-6 text-gray-800">Filters</h2>
         {/* You can insert filter controls here */}
         <div className="space-y-4 text-base text-gray-700">
@@ -103,7 +149,7 @@ const ProductList: React.FC = () => {
   
       {/* Product Grid */}
       <div className="flex-1">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-8">
       {products.map((product) => (
         <div
           key={product.id}
@@ -148,7 +194,7 @@ const ProductList: React.FC = () => {
 
           <div className="p-6 bg-gray-50 border-t border-gray-200 flex space-x-2">
             {/* Conditionally render buttons based on user role */}
-            {user?.type !== 'BUYER' && (
+            {user?.type !== 'BUYER' ? (
               <>
                 <button
                   onClick={() => {
@@ -194,6 +240,13 @@ const ProductList: React.FC = () => {
                   </AlertDialog.Portal>
                 </AlertDialog.Root>
               </>
+            ) : (
+              <button
+                onClick={() => handlePay(product.id)}
+                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Pay Now
+              </button>
             )}
           </div>
         </div>

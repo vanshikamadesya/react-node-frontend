@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAppSelector } from "../store/hook";
 
 const LandingPage: React.FC = () => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-800">
 
@@ -14,12 +17,14 @@ const LandingPage: React.FC = () => {
           Discover, manage, and sell products with confidence. Join a global network of buyers and sellers.
         </p>
         <div className="flex gap-4 flex-wrap justify-center animate-fade-in-up delay-200">
-          <Link
-            to="/register"
-            className="px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition"
-          >
-            Get Started
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              to="/register"
+              className="px-6 py-3 bg-white text-blue-700 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition"
+            >
+              Get Started
+            </Link>
+          )}
           <Link
             to="/products"
             className="px-6 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-blue-700 transition"
@@ -74,14 +79,16 @@ const LandingPage: React.FC = () => {
       <section className="py-20 px-6 bg-gradient-to-tr from-indigo-100 via-white to-blue-100 text-center">
         <h2 className="text-4xl font-bold mb-4">Start Your Journey Today</h2>
         <p className="text-gray-700 text-lg max-w-xl mx-auto mb-8">
-          Join thousands of users transforming their business with our platform. It’s fast, easy, and free to start.
+          Join thousands of users transforming their business with our platform. It's fast, easy, and free to start.
         </p>
-        <Link
-          to="/register"
-          className="inline-block px-10 py-4 bg-blue-600 text-white text-lg font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
-        >
-          Sign Up Free
-        </Link>
+        {!isAuthenticated && (
+          <Link
+            to="/register"
+            className="inline-block px-10 py-4 bg-blue-600 text-white text-lg font-medium rounded-lg shadow-md hover:bg-blue-700 transition"
+          >
+            Sign Up Free
+          </Link>
+        )}
       </section>
 
       {/* Footer */}
