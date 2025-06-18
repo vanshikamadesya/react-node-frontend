@@ -1,112 +1,112 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppDispatch, useAppSelector } from "../store/hook";
 import { createProduct, updateProduct } from "../store/slices/productSlice";
 import * as Label from "@radix-ui/react-label";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
-import type { Product } from "../types";
 import { useNavigate } from "react-router-dom";
+import type { Product } from "../types";
+import { PRODUCT_CATEGORIES } from "../constants/categories";
+
+// 🛡️ Dynamic Schema Generator
+const createProductSchema = (isEdit: boolean) =>
+  z.object({
+    name: z.string().min(1, "Name is required"),
+    description: z.string().min(1, "Description is required"),
+    price: z
+      .string().min(1, "Price is required")
+      .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+        message: "Price must be a non-negative number",
+      }),
+    stock: z
+      .string()
+      .refine((val) => Number.isInteger(Number(val)) && Number(val) >= 0, {
+        message: "Stock must be a non-negative integer",
+      }),
+    category: z.string().min(1, "Category is required"),
+    productImage: isEdit
+      ? z.any().optional()
+      : z
+          .any()
+          .refine((file) => file?.length === 1, {
+            message: "Product image is required",
+          }),
+  });
+
+type ProductFormData = z.infer<ReturnType<typeof createProductSchema>>;
 
 const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useAppSelector((state) => state.products);
-  const {
-    user,
-    isAuthenticated,
-    isLoading: authLoading,
-  } = useAppSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    stock: "",
+  const { isLoading, error } = useAppSelector((state) => state.products);
+  const { user, isAuthenticated, isLoading: authLoading } = useAppSelector(
+    (state) => state.auth
+  );
+
+  const isEdit = !!product;
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(createProductSchema(isEdit)),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      category: "",
+    },
   });
-  const [productImage, setProductImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated && !user) {
       navigate("/login");
     }
-  }, [isAuthenticated, authLoading, navigate, user]);
+  }, [authLoading, isAuthenticated, user, navigate]);
 
   useEffect(() => {
-    console.log("ProductForm useEffect - product prop:", product);
     if (product) {
-      setFormData({
-        name: product.name ?? "",
-        description: product.description ?? "",
-        price: product.price?.toString() ?? "",
-        category: product.category ?? "",
-        stock: product.stock?.toString() ?? "",
-      });
-      setProductImage(null);
-    } else {
-      setFormData({
-        name: "",
-        description: "",
-        price: "",
-        category: "",
-        stock: "",
-      });
-      setProductImage(null);
+      setValue("name", product.name ?? "");
+      setValue("description", product.description ?? "");
+      setValue("price", product.price?.toString() ?? "");
+      setValue("stock", product.stock?.toString() ?? "");
+      setValue("category", product.category ?? "");
     }
-  }, [product]);
+  }, [product, setValue]);
 
-  if (authLoading) {
-    return <div>Loading...</div>;
-  }
-  if (!isAuthenticated || !user) {
-    return null; // Will redirect due to the useEffect above
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("description", formData.description);
-    data.append("price", formData.price);
-    data.append("category", formData.category);
-    data.append("stock", formData.stock);
-    if (productImage) {
-      data.append("productImage", productImage);
-    }
-
+  const onSubmit = async (data: ProductFormData) => {
     try {
-      if (product) {
-        await dispatch(updateProduct({ id: product.id, data })).unwrap();
-        navigate("/products");
-      } else {
-        if (!user?._id) {
-          throw new Error("User ID not found");
-        }
-        await dispatch(createProduct({ userId: user._id, data })).unwrap();
-        navigate("/products");
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("price", data.price);
+      formData.append("stock", data.stock);
+      formData.append("category", data.category);
+      if (data.productImage && data.productImage.length > 0) {
+        formData.append("productImage", data.productImage[0]);
       }
-    } catch (error) {
-      console.error("Error submitting product:", error);
+
+      if (product) {
+        await dispatch(updateProduct({ id: product.id, data: formData })).unwrap();
+      } else {
+        if (!user?._id) throw new Error("User ID not found");
+        await dispatch(createProduct({ userId: user._id, data: formData })).unwrap();
+      }
+
+      navigate("/products");
+    } catch (err) {
+      console.error("Submit error:", err);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProductImage(file);
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  if (authLoading) return <div>Loading...</div>;
+  if (!isAuthenticated || !user) return null;
 
   return (
     <div className="min-h-screen flex justify-end items-center pr-24">
@@ -128,7 +128,7 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
                 </AlertDialog.Description>
                 <div className="flex justify-end">
                   <AlertDialog.Cancel asChild>
-                    <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
                       OK
                     </button>
                   </AlertDialog.Cancel>
@@ -138,134 +138,113 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
           </AlertDialog.Root>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Name */}
           <div>
-            <Label.Root
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <Label.Root htmlFor="name" className="block mb-1 text-sm font-medium">
               Product Name
             </Label.Root>
             <input
               id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("name")}
+              className="w-full px-3 py-2 border rounded-md"
             />
+            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
           </div>
 
+          {/* Description */}
           <div>
-            <Label.Root
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <Label.Root htmlFor="description" className="block mb-1 text-sm font-medium">
               Description
             </Label.Root>
             <textarea
               id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("description")}
+              className="w-full px-3 py-2 border rounded-md"
             />
+            {errors.description && (
+              <p className="text-sm text-red-500">{errors.description.message}</p>
+            )}
           </div>
 
+          {/* Price & Stock */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label.Root
-                htmlFor="price"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+            < div>
+              <Label.Root htmlFor="price" className="block mb-1 text-sm font-medium">
                 Price ($)
               </Label.Root>
               <input
                 id="price"
-                name="price"
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register("price")}
+                className="w-full px-3 py-2 border rounded-md"
               />
+              {errors.price && <p className="text-sm text-red-500">{errors.price.message}</p>}
             </div>
 
             <div>
-              <Label.Root
-                htmlFor="stock"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <Label.Root htmlFor="stock" className="block mb-1 text-sm font-medium">
                 Stock Quantity
               </Label.Root>
               <input
                 id="stock"
-                name="stock"
                 type="number"
                 min="0"
-                value={formData.stock}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register("stock")}
+                className="w-full px-3 py-2 border rounded-md"
               />
+              {errors.stock && <p className="text-sm text-red-500">{errors.stock.message}</p>}
             </div>
           </div>
 
+          {/* Category */}
           <div>
-            <Label.Root
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <Label.Root htmlFor="category" className="block mb-1 text-sm font-medium">
               Category
             </Label.Root>
             <select
               id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("category")}
+              className="w-full px-3 py-2 border rounded-md"
             >
               <option value="">Select a category</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Clothing">Clothing</option>
-              <option value="Books">Books</option>
-              <option value="Home & Kitchen">Home & Kitchen</option>
-              <option value="Sports">Sports</option>
-              <option value="Toys">Toys</option>
-              <option value="Beauty">Beauty</option>
-              <option value="Health">Health</option>
-              <option value="Automotive">Automotive</option>
-              <option value="Other">Other</option>
+              {PRODUCT_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
             </select>
+            {errors.category && (
+              <p className="text-sm text-red-500">{errors.category.message}</p>
+            )}
           </div>
 
+          {/* Image */}
           <div>
-            <Label.Root
-              htmlFor="imageUrl"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Image URL
+            <Label.Root htmlFor="productImage" className="block mb-1 text-sm font-medium">
+              Product Image
             </Label.Root>
             <input
-              id="productImage"
-              name="productImage"
               type="file"
+              id="productImage"
               accept="image/*"
-              onChange={handleFileChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...register("productImage")}
+              className="w-full px-3 py-2 border rounded-md"
             />
+            {errors.productImage && (
+              <p className="text-sm text-red-500">{errors.productImage.message as string}</p>
+            )}
           </div>
 
+          {/* Submit */}
           <div className="flex space-x-4">
             <button
               type="submit"
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
               disabled={isLoading}
+              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
               {isLoading
                 ? product

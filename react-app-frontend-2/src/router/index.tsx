@@ -11,6 +11,7 @@ import ResetPassword from '../pages/ResetPassword';
 import LandingPage from '../pages/LandingPage';
 import PaymentPage from '../pages/PaymentPage';
 import PaymentSuccess from '../pages/PaymentSuccess';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const router = createBrowserRouter([
   {
@@ -38,30 +39,34 @@ const router = createBrowserRouter([
         element: <ResetPassword/>
       },
       {
-        path: "create-product",
-        element: <ProductForm />
-      },
-      {
-        path: "products",
-        element: <ProductList />
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard/>
-      },
-      {
-        path: "edit-product/:id",
-        element: <EditProduct/>
-      },
-      {
-        path: "/payment",
-        element: <PaymentPage />
-      },
-      {
-        path: "/payment-success",
-        element: <PaymentSuccess/>
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "create-product",
+            element: <ProductForm />
+          },
+          {
+            path: "products",
+            element: <ProductList />
+          },
+          {
+            path: "dashboard",
+            element: <Dashboard/>
+          },
+          {
+            path: "edit-product/:id",
+            element: <EditProduct/>
+          },
+          {
+            path: "/payment",
+            element: <PaymentPage />
+          },
+          {
+            path: "/payment-success",
+            element: <PaymentSuccess/>
+          }
+        ]
       }
-     
     ],
   },
 ]);

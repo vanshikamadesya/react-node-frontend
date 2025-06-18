@@ -163,11 +163,14 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 
     req.login(user, (err) => {
       if (err) {
+        console.error("Error during req.login:", err);
         return res.status(500).json({
           message: "Error in login user",
           error: err,
         });
       }
+      console.log("User successfully logged in via req.login. Session ID:", req.session.id);
+      console.log("req.user after login:", req.user);
       return res.status(200).json({
         message: "Login Successful!",
         user: {
@@ -195,16 +198,6 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-// Add the getCurrentUser controller function
-export const getCurrentUser = (req: Request, res: Response) => {
-  if (req.user) {
-    // If the user is authenticated (req.user is populated by the auth middleware)
-    res.status(200).json({ user: req.user });
-  } else {
-    // If req.user is not populated, the user is not authenticated
-    res.status(401).json({ message: "Not authenticated" });
-  }
-};
 
 // Request password reset
 export const forgotPass = async (req: Request, res: Response, next: NextFunction) => {
@@ -219,7 +212,6 @@ export const forgotPass = async (req: Request, res: Response, next: NextFunction
     }
     // Generate random reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    console.log
 
     // Save token and expiry to user doc
     user.resetPasswordToken = resetToken;
@@ -253,7 +245,7 @@ export const resetPass = async (req: Request, res: Response, next: NextFunction)
 
     console.log("token", token)
     const user = await User.findOne({
-      resetPasswordToken: token, // Use the token from req.params
+      resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() },
     });
 
@@ -280,5 +272,21 @@ export const resetPass = async (req: Request, res: Response, next: NextFunction)
   } catch (error) {
     console.error("Reset password error:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const checkSession = (req: Request, res: Response) => {
+  if (req.isAuthenticated()) {
+    // The user is authenticated, send back the user data.
+    res.status(200).json({
+      message: "Session is active",
+      user: req.user, // req.user is populated by Passport from the session
+    });
+  } else {
+    // No active session
+    res.status(401).json({
+      message: "No active session",
+      user: null,
+    });
   }
 };

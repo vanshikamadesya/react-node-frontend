@@ -3,39 +3,47 @@ import { useAppDispatch, useAppSelector } from "../store/hook";
 import { loginUser, clearError } from "../store/slices/authSlice";
 import * as Label from "@radix-ui/react-label";
 import * as Toast from "@radix-ui/react-toast";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Zod schema for login form
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useAppSelector((state) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
   });
- 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+
+  const onSubmit = async (data: LoginFormData) => {
     dispatch(clearError());
-    const resultAction = await dispatch(loginUser(formData));
+    const resultAction = await dispatch(loginUser(data));
     if (loginUser.fulfilled.match(resultAction)) {
       navigate("/dashboard");
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   return (
     <Toast.Provider>
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg ">
-          <h2 className="text-2xl font-bold text-center mb-6 bg-red">Login</h2>
+        <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg">
+          <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
 
           {error && (
             <Toast.Root className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -43,7 +51,7 @@ const Login: React.FC = () => {
             </Toast.Root>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label.Root
                 htmlFor="email"
@@ -53,13 +61,13 @@ const Login: React.FC = () => {
               </Label.Root>
               <input
                 id="email"
-                name="email"
                 type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
+                {...register("email")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -69,15 +77,24 @@ const Login: React.FC = () => {
               >
                 Password
               </Label.Root>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  {...register("password")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              )}
 
               <div className="text-left mt-3">
                 <button
@@ -101,10 +118,10 @@ const Login: React.FC = () => {
 
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate('/register')}
+                onClick={() => navigate("/register")}
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 Register here

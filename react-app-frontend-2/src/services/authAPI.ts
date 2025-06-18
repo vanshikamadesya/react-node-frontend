@@ -5,10 +5,25 @@ import type {
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  timeout: 10000,
 });
+
+// Add response interceptor to handle authentication errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // If we get a 401, the session is invalid
+    if (error.response?.status === 401) {
+      // Clear any stored auth state
+      console.log("Session expired or invalid");
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const authApi = {
   login: (credentials: LoginCredentials) =>
@@ -17,20 +32,14 @@ export const authApi = {
   register: (credentials: RegisterCredentials) =>
     api.post("/user/signup", credentials),
 
-  logout: () =>   
+  logout: () =>
     api.post("/user/logout"),
 
-  // getCurrentUser: () => 
-  //   api.get("/user/me"),
-    
   forgotPassword: (email: string) =>
     api.post("/user/forgot-password", { email }),
 
   resetPassword: (token: string, newPassword: string) =>
     api.post(`/user/reset-password/${token}`, { newPassword }),
 
-  refreshSession: () =>
-    api.post("/refresh-session"),
-
-  getCurrentUser: () => api.get('/user/getCurrentUser'),
+  checkSession: () => api.get('/user/session'),
 };

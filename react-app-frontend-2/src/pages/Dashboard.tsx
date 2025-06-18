@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
       <main className="flex-1 p-8 ">
         <header className="mb-8">
           <h1 className="text-3xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back, {user?.username || "User"}!</p>
+          <p className="text-gray-500 mt-1">Welcome back, {user?.email || "User"}!</p>
         </header>
 
         {/* Stat Cards */}

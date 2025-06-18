@@ -40,7 +40,10 @@ export const fetchProduct = createAsyncThunk(
 
 export const createProduct = createAsyncThunk(
   "products/createProduct",
-  async ({ userId, data }: { userId: string; data: FormData }, { rejectWithValue }) => {
+  async (
+    { userId, data }: { userId: string; data: FormData },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await productApi.createProduct(userId, data);
       return response.data.product;
@@ -54,10 +57,7 @@ export const createProduct = createAsyncThunk(
 
 export const updateProduct = createAsyncThunk(
   "products/updateProduct",
-  async (
-    { id, data }: { id: string; data: FormData },
-    { rejectWithValue }
-  ) => {
+  async ({ id, data }: { id: string; data: FormData }, { rejectWithValue }) => {
     try {
       const response = await productApi.updateProduct(id, data);
       return response.data.product;
@@ -83,6 +83,37 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
+export const filterProducts = createAsyncThunk(
+  "products/filterProducts",
+  async (
+    filters: {
+      query?: string;
+      category?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      inStock?: boolean;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters.query) queryParams.append("search", filters.query);
+      if (filters.category) queryParams.append("category", filters.category);
+      if (filters.minPrice !== undefined) queryParams.append("minPrice", String(filters.minPrice));
+      if (filters.maxPrice !== undefined) queryParams.append("maxPrice", String(filters.maxPrice));
+      if (filters.inStock !== undefined) queryParams.append("inStock", String(filters.inStock));
+
+      const queryString = queryParams.toString();
+      const response = await productApi.searchProducts(queryString);
+      return response.data.products;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to filter products"
+      );
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: "products",
   initialState,
@@ -101,25 +132,31 @@ const productSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchProducts.fulfilled, (state, action: { payload: Product[] }) => {
-        state.isLoading = false;
-        state.products = action.payload.map((product: Product) => ({...product, id: product._id}));
-      })
+      .addCase(
+        fetchProducts.fulfilled,
+        (state, action: { payload: Product[] }) => {
+          state.isLoading = false;
+          state.products = action.payload.map((product: Product) => ({
+            ...product,
+            id: product._id,
+          }));
+        }
+      )
       .addCase(fetchProducts.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
       // Fetch single product
       .addCase(fetchProduct.fulfilled, (state, action) => {
-        state.selectedProduct = {...action.payload, id: action.payload._id};
+        state.selectedProduct = { ...action.payload, id: action.payload._id };
       })
       // Create product
       .addCase(createProduct.fulfilled, (state, action) => {
-        state.products.push({...action.payload, id: action.payload._id});
+        state.products.push({ ...action.payload, id: action.payload._id });
       })
       // Update product
       .addCase(updateProduct.fulfilled, (state, action) => {
-        const updatedProduct = {...action.payload, id: action.payload._id};
+        const updatedProduct = { ...action.payload, id: action.payload._id };
         const index = state.products.findIndex(
           (p) => p.id === updatedProduct.id
         );
@@ -130,6 +167,26 @@ const productSlice = createSlice({
           state.selectedProduct = updatedProduct;
         }
       })
+      // Filter products
+      .addCase(filterProducts.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(
+        filterProducts.fulfilled,
+        (state, action: { payload: Product[] }) => {
+          state.isLoading = false;
+          state.products = action.payload.map((product: Product) => ({
+            ...product,
+            id: product._id,
+          }));
+        }
+      )
+      .addCase(filterProducts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
       // Delete product
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.products = state.products.filter((p) => p.id !== action.payload);
