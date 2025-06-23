@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAppDispatch, useAppSelector } from "../store/hook";
-import { createProduct, updateProduct } from "../store/slices/productSlice";
+import { useAppSelector } from "../store/hook";
+import { useCreateProductMutation, useUpdateProductMutation } from "../services/productAPI";
 import * as Label from "@radix-ui/react-label";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { useNavigate } from "react-router-dom";
@@ -38,14 +38,10 @@ const createProductSchema = (isEdit: boolean) =>
 type ProductFormData = z.infer<ReturnType<typeof createProductSchema>>;
 
 const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-  const { isLoading, error } = useAppSelector((state) => state.products);
-  const { user, isAuthenticated, isLoading: authLoading } = useAppSelector(
-    (state) => state.auth
-  );
-
+  const { isLoading: authLoading, isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const [createProduct, { isLoading: isCreating, error: createError }] = useCreateProductMutation();
+  const [updateProduct, { isLoading: isUpdating, error: updateError }] = useUpdateProductMutation();
   const isEdit = !!product;
 
   const {
@@ -91,14 +87,12 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
       if (data.productImage && data.productImage.length > 0) {
         formData.append("productImage", data.productImage[0]);
       }
-
       if (product) {
-        await dispatch(updateProduct({ id: product.id, data: formData })).unwrap();
+        await updateProduct({ id: product._id, data: formData }).unwrap();
       } else {
         if (!user?._id) throw new Error("User ID not found");
-        await dispatch(createProduct({ userId: user._id, data: formData })).unwrap();
+        await createProduct({ userId: user._id, data: formData }).unwrap();
       }
-
       navigate("/products");
     } catch (err) {
       console.error("Submit error:", err);
@@ -115,8 +109,8 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
           {product ? "Edit Product" : "Create New Product"}
         </h2>
 
-        {error && (
-          <AlertDialog.Root open={!!error}>
+        {(createError || updateError) && (
+          <AlertDialog.Root open={!!(createError || updateError)}>
             <AlertDialog.Portal>
               <AlertDialog.Overlay className="fixed inset-0 bg-black/50" />
               <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -124,7 +118,7 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
                   Error
                 </AlertDialog.Title>
                 <AlertDialog.Description className="text-gray-600 mb-4">
-                  {error}
+                  {((createError as any)?.data?.message || (updateError as any)?.data?.message) ?? "An error occurred."}
                 </AlertDialog.Description>
                 <div className="flex justify-end">
                   <AlertDialog.Cancel asChild>
@@ -170,7 +164,7 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
 
           {/* Price & Stock */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            < div>
+            <div>
               <Label.Root htmlFor="price" className="block mb-1 text-sm font-medium">
                 Price ($)
               </Label.Root>
@@ -243,13 +237,11 @@ const ProductForm: React.FC<{ product?: Product | null }> = ({ product }) => {
           <div className="flex space-x-4">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isCreating || isUpdating}
               className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {isLoading
-                ? product
-                  ? "Updating..."
-                  : "Creating..."
+              {isCreating || isUpdating
+                ? "Processing..."
                 : product
                 ? "Update Product"
                 : "Create Product"}

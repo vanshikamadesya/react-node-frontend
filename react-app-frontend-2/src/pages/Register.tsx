@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../store/hook";
-import { clearError, registerUser } from "../store/slices/authSlice";
+import { useAppDispatch } from "../store/hook";
+import { clearError } from "../store/slices/authSlice";
 import * as Label from "@radix-ui/react-label";
 import * as Toast from "@radix-ui/react-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRegisterMutation } from "../services/authAPI";
 
 // Zod Schema for validation
 const registerSchema = z.object({
@@ -22,11 +23,12 @@ type RegisterData = z.infer<typeof registerSchema>;
 const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
+  const [register, { isLoading, error }] = useRegisterMutation();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
-    register,
+    register: formRegister,
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterData>({
@@ -41,9 +43,12 @@ const RegisterForm: React.FC = () => {
 
   const onSubmit = async (data: RegisterData) => {
     dispatch(clearError());
-    const resultAction = await dispatch(registerUser(data));
-    if (registerUser.fulfilled.match(resultAction)) {
+    setApiError(null);
+    try {
+      await register(data).unwrap();
       navigate("/login");
+    } catch (err: any) {
+      setApiError(err?.data?.message || "Registration failed");
     }
   };
 
@@ -52,9 +57,9 @@ const RegisterForm: React.FC = () => {
       <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
 
-        {error && (
+        {(apiError || (error && "data" in error)) && (
           <Toast.Root className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <Toast.Description>{error}</Toast.Description>
+            <Toast.Description>{apiError || (error as any)?.data?.message}</Toast.Description>
           </Toast.Root>
         )}
 
@@ -67,7 +72,7 @@ const RegisterForm: React.FC = () => {
             <input
               id="username"
               type="text"
-              {...register("username")}
+              {...formRegister("username")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.username && (
@@ -83,7 +88,7 @@ const RegisterForm: React.FC = () => {
             <input
               id="email"
               type="email"
-              {...register("email")}
+              {...formRegister("email")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.email && (
@@ -100,7 +105,7 @@ const RegisterForm: React.FC = () => {
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                {...register("password")}
+                {...formRegister("password")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
               />
               <button
@@ -123,7 +128,7 @@ const RegisterForm: React.FC = () => {
             </Label.Root>
             <select
               id="type"
-              {...register("type")}
+              {...formRegister("type")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="BUYER">Buyer</option>

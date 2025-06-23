@@ -1,30 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as Toast from "@radix-ui/react-toast";
-import { useAppDispatch } from "../store/hook";
-import { forgotPassword } from "../store/slices/authSlice";
+import { useForgotPasswordMutation } from "../services/authAPI";
 
 const ForgetPassword: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [forgotPassword, { isLoading, error }] = useForgotPasswordMutation();
   const [success, setSuccess] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    
+    setApiError(null);
     try {
-      // TODO: Implement password reset request
-      await dispatch(forgotPassword(email)).unwrap();
+      await forgotPassword(email).unwrap();
       setSuccess(true);
-    } catch (err) {
-      setError("Failed to send reset email. Please try again.");
-    } finally {
-      setIsLoading(false);
+    } catch (err: any) {
+      setApiError(err?.data?.message || "Failed to send reset email. Please try again.");
     }
   };
 
@@ -34,9 +27,9 @@ const ForgetPassword: React.FC = () => {
         <div className="w-[400px] h-[400px] bg-gray-100 rounded-lg p-12 shadow-lg mx-auto space-y-8">
           <h2 className="text-3xl font-bold text-center">Reset Password</h2>
 
-          {error && (
+          {(apiError || (error && "data" in error)) && (
             <Toast.Root className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <Toast.Description>{error}</Toast.Description>
+              <Toast.Description>{apiError || (error as any)?.data?.message}</Toast.Description>
             </Toast.Root>
           )}
 
@@ -55,7 +48,6 @@ const ForgetPassword: React.FC = () => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-               
                 <input
                   id="email"
                   type="email"

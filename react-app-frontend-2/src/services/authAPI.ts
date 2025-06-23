@@ -1,4 +1,4 @@
-import axios from "axios";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
   LoginCredentials,
   RegisterCredentials,
@@ -6,40 +6,58 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  timeout: 10000,
+export const authApi = createApi({
+  reducerPath: 'authApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: API_BASE_URL,
+    credentials: 'include',
+  }),
+  endpoints: (builder) => ({
+    login: builder.mutation({
+      query: (credentials: LoginCredentials) => ({
+        url: '/user/signin',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    register: builder.mutation({
+      query: (credentials: RegisterCredentials) => ({
+        url: '/user/signup',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    logout: builder.mutation({
+      query: () => ({
+        url: '/user/logout',
+        method: 'POST',
+      }),
+    }),
+    forgotPassword: builder.mutation({
+      query: (email: string) => ({
+        url: '/user/forgot-password',
+        method: 'POST',
+        body: { email },
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: ({ token, newPassword }: { token: string; newPassword: string }) => ({
+        url: `/user/reset-password/${token}`,
+        method: 'POST',
+        body: { newPassword },
+      }),
+    }),
+    checkSession: builder.query({
+      query: () => '/user/session',
+    }),
+  }),
 });
 
-// Add response interceptor to handle authentication errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // If we get a 401, the session is invalid
-    if (error.response?.status === 401) {
-      // Clear any stored auth state
-      console.log("Session expired or invalid");
-    }
-    return Promise.reject(error);
-  }
-);
-
-export const authApi = {
-  login: (credentials: LoginCredentials) =>
-    api.post("/user/signin", credentials),
-
-  register: (credentials: RegisterCredentials) =>
-    api.post("/user/signup", credentials),
-
-  logout: () =>
-    api.post("/user/logout"),
-
-  forgotPassword: (email: string) =>
-    api.post("/user/forgot-password", { email }),
-
-  resetPassword: (token: string, newPassword: string) =>
-    api.post(`/user/reset-password/${token}`, { newPassword }),
-
-  checkSession: () => api.get('/user/session'),
-};
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useCheckSessionQuery,
+} = authApi;

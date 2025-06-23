@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../store/hook";
-import { resetPassword, clearError } from "../store/slices/authSlice";
+import { useAppDispatch } from "../store/hook";
+import { clearError } from "../store/slices/authSlice";
 import * as Label from "@radix-ui/react-label";
 import * as Toast from "@radix-ui/react-toast";
+import { useResetPasswordMutation } from "../services/authAPI";
 
 const ResetPassword: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const [resetPassword, { isLoading, error }] = useResetPasswordMutation();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,26 +30,18 @@ const ResetPassword: React.FC = () => {
     e.preventDefault();
     setLocalError(null); // Clear local error on new submission
     if (password !== confirmPassword) {
-      // You might want to set a local error state here
-      console.error("Passwords do not match");
       setLocalError("Passwords do not match");
       return;
     }
-
     if (!token) {
-        console.error("Reset token is missing");
-        // Handle missing token - maybe navigate to an error page or back to forgot password
-        return;
+      return;
     }
-
     dispatch(clearError());
     try {
-        const resultAction = await dispatch(resetPassword({ token, newPassword: password })).unwrap();
-        // Assuming resetPassword thunk returns something on success
-        setSuccess(true);
+      await resetPassword({ token, newPassword: password }).unwrap();
+      setSuccess(true);
     } catch (err) {
-        console.error("Failed to reset password:", err);
-        // The error from the thunk is already managed by the authSlice and available in `error`
+      // error is handled by RTK Query
     }
   };
 
@@ -58,10 +51,10 @@ const ResetPassword: React.FC = () => {
         <div className="w-[400px] bg-gray-100 rounded-lg p-12 shadow-lg space-y-6">
           <h2 className="text-2xl font-bold text-center">Reset Password</h2>
 
-          {/* Display backend errors from Redux slice */}
+          {/* Display backend errors from RTK Query */}
           {error && (
             <Toast.Root open={!!error} className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              <Toast.Description>{error}</Toast.Description>
+              <Toast.Description>{(error as any)?.data?.message || "Failed to reset password."}</Toast.Description>
             </Toast.Root>
           )}
 
@@ -75,13 +68,6 @@ const ResetPassword: React.FC = () => {
           {success ? (
             <div className="text-center space-y-4">
               <p className="text-green-600">Your password has been reset successfully.</p>
-              {/* The button is now optional for manual navigation if the automatic redirect is too slow */}
-              {/* <button
-                onClick={() => navigate("/login")}
-                className="text-blue-600 hover:text-blue-800 underline"
-              >
-                Return to Login
-              </button> */}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

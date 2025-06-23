@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../store/hook";
-import { loginUser, clearError } from "../store/slices/authSlice";
 import * as Label from "@radix-ui/react-label";
 import * as Toast from "@radix-ui/react-toast";
 import { Eye, EyeOff } from "lucide-react";
@@ -8,6 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLoginMutation } from "../services/authAPI";
+import { useAppDispatch } from "../store/hook";
+import { setAuth } from "../store/slices/authSlice";
 
 // Zod schema for login form
 const loginSchema = z.object({
@@ -18,10 +19,11 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [login, { isLoading, error }] = useLoginMutation();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -32,10 +34,13 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    dispatch(clearError());
-    const resultAction = await dispatch(loginUser(data));
-    if (loginUser.fulfilled.match(resultAction)) {
+    setApiError(null);
+    try {
+      const result = await login(data).unwrap();
+      dispatch(setAuth(result));
       navigate("/dashboard");
+    } catch (err: any) {
+      setApiError(err?.data?.message || "Login failed");
     }
   };
 
@@ -45,9 +50,9 @@ const Login: React.FC = () => {
         <div className="w-[450px] bg-gray-100 rounded-lg p-16 shadow-lg">
           <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
 
-          {error && (
+          {(apiError || (error && "data" in error)) && (
             <Toast.Root className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              <Toast.Description>{error}</Toast.Description>
+              <Toast.Description>{apiError || (error as any)?.data?.message}</Toast.Description>
             </Toast.Root>
           )}
 

@@ -1,26 +1,30 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Search, User } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../store/hook";
-import { logoutUser } from "../store/slices/authSlice";
 import { useEffect, useRef, useState } from "react";
 import { ShoppingCartLogo } from "./ShoppingCartLogo";
-
+import { useLogoutMutation } from "../services/authAPI";
+import { useCheckSessionQuery } from "../services/authAPI";
+import { clearAuth } from "../store/slices/authSlice";
 
 const Header = () => {
+  const [logout] = useLogoutMutation();
   const dispatch = useAppDispatch();
+  const { isLoading: authLoading } = useCheckSessionQuery("");
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const searchTimeoutRef = useRef<number | null>(null);
 
-  const { user, isAuthenticated, isLoading: authLoading, hasFetchedUser } = useAppSelector(
+  const { user, isAuthenticated } = useAppSelector(
     (state) => state.auth
   );
 
   const handleLogout = async () => {
     try {
-      await dispatch(logoutUser()).unwrap();
+      await logout(null).unwrap();
+      dispatch(clearAuth());
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -73,23 +77,15 @@ const Header = () => {
           </button>
         </Link>
 
-        {user.type === 'SELLER' && (
+        {user.type === "SELLER" && (
           <>
-          <Link to="/create-product">
-            <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              Create Product
-            </button>
-          </Link>
-  
-            {/* <Link to="/my-products">
-              <button className="px-4 py-2 rounded-md border border-purple-600 text-purple-600 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                My Products
+            <Link to="/create-product">
+              <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Create Product
               </button>
-            </Link> */}
+            </Link>
           </>
         )}
-  
-       
       </>
     );
   };
@@ -122,7 +118,7 @@ const Header = () => {
           </Link>
 
           {/* Search Bar */}
-          {isAuthenticated && user && (
+          {isAuthenticated && user && !authLoading && (
             <div className="flex-grow max-w-md px-4">
               <form onSubmit={handleSearch} className="relative">
                 <input
@@ -143,13 +139,12 @@ const Header = () => {
           )}
 
           <div className="flex items-center space-x-4">
-            {!hasFetchedUser ? (
+            {authLoading ? (
               <div>Loading...</div>
             ) : isAuthenticated && user ? (
               <>
                 {renderRoleBasedLinks()}
 
-               
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setDropdownOpen((prev) => !prev)}

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector } from "../store/hook";
+import { useAppSelector, useAppDispatch } from "../store/hook";
+
 
 const LandingPage: React.FC = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-800">

@@ -1,22 +1,18 @@
-import React, { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../store/hook";
-import { fetchProducts } from "../store/slices/productSlice";
+import React from "react";
+import { useAppSelector } from "../store/hook";
+import { useGetProductsQuery } from "../services/productAPI";
 
 const Dashboard: React.FC = () => {
-  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const { products, isLoading, error } = useAppSelector((state) => state.products);
-
-  useEffect(() => {
-    dispatch(fetchProducts());
-  }, [dispatch]);
+  const { data, isLoading, error } = useGetProductsQuery("");
+  const products = data?.products || [];
 
   if (isLoading) {
     return <div className="text-center py-8">Loading products data...</div>;
   }
 
   if (error) {
-    return <div className="text-center py-8 text-red-600">Error loading products: {error}</div>;
+    return <div className="text-center py-8 text-red-600">Error loading products: {(error as any)?.data?.message || "Failed to load products"}</div>;
   }
 
   return (

@@ -21,6 +21,10 @@ const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Products',
   }],
+  cart: {
+    type: Schema.Types.ObjectId,
+    ref: 'Cart',
+  },
   resetToken: {
     type: String,
   },
