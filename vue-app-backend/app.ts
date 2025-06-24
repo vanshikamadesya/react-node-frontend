@@ -9,7 +9,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { IUser } from "./types/index.js";
 import PaymentRoutes from './Apis/Payment/payment.route.js';
-
+import path from "path";
 
 dotenv.config();
 const app = express();
@@ -20,6 +20,9 @@ console.log("SESSION_SECRET:", process.env.SESSION_SECRET);
 // Add body-parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from ImageUploads directory
+app.use('/ImageUploads', express.static('ImageUploads'));
 
 // Add CORS middleware
 app.use(

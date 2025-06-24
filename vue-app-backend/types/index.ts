@@ -26,25 +26,15 @@ export interface ISession {
 
 export interface IProduct {
     name: string;
-    price: string;
+    price: number;
     description: string;
     seller?: mongoose.Schema.Types.ObjectId;
     productImage: string;
+    stock: number;
+    category: string;
 }
 
 export interface User {
     type: UserType;
     [key: string]: any;
-}
-
-export interface ICartProduct {
-    product: string; // Product ID
-    quantity: number;
-}
-
-export interface ICart {
-    user: string; // User ID
-    products: ICartProduct[];
-    createdAt?: Date;
-    updatedAt?: Date;
 }

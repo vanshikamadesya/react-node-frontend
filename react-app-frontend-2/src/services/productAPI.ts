@@ -16,8 +16,19 @@ export const productApi = createApi({
       providesTags: ['Product'],
     }),
     searchProducts: builder.query({
-      query: (query: string) => `/product/filterProducts?${query}`,
+      query: (params) => {
+        const query = new URLSearchParams();
+        if (params.search) query.set("search", params.search);
+        if (params.minPrice !== undefined) query.set("minPrice", String(params.minPrice));
+        if (params.maxPrice !== undefined) query.set("maxPrice", String(params.maxPrice));
+        if (params.category) query.set("category", params.category);
+        if (params.stock) query.set("stock", params.stock);
+    
+        return `/product/filterProducts?${query.toString()}`;
+      },
+      providesTags: ['Product'],
     }),
+    
     getProductsByUserId: builder.query({
       query: (userId: string) => `/product/getProducts/${userId}`,
     }),
@@ -45,8 +56,9 @@ export const productApi = createApi({
         url: `/product/deleteProduct/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Product'],
+      invalidatesTags: ['Product'], 
     }),
+    
   }),
 });
 
