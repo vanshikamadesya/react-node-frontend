@@ -9,7 +9,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { IUser } from "./types/index.js";
 import PaymentRoutes from './Apis/Payment/payment.route.js';
-import CartRoutes from './Apis/Cart/cart.route.js';
+
 
 dotenv.config();
 const app = express();
@@ -37,7 +37,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       // secure: process.env.NODE_ENV === 'production',
-      maxAge: 5 * 60 * 1000, // 5 minutes
+      maxAge: 50 * 1000, // 50 sec 
     },
   })
 );
@@ -82,6 +82,9 @@ passport.deserializeUser(async (id: IUser['_id'], done: Function) => {
 });
 
 app.post("/refresh-session", (req, res) => {
+  console.log("Session:", req.session);
+  console.log("User:", req.user);
+
   if (req.isAuthenticated()) {
     //regenerate session
     req.session.regenerate((err) => {
@@ -98,7 +101,7 @@ app.post("/refresh-session", (req, res) => {
         }
 
         //Reset the maxAge of the cookie
-        req.session.cookie.maxAge = 5 * 60 * 1000;
+        req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
 
         return res.json({
           message: "Session refreshed successfully",
@@ -143,7 +146,7 @@ import ProductRoutes from "./Apis/Product/product.route.js";
 app.use("/user", UserRoutes);
 app.use("/product", ProductRoutes);
 app.use('/payment', PaymentRoutes);
-app.use('/cart', CartRoutes);
+
 
 mongoose.Promise = global.Promise;
 
