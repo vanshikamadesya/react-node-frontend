@@ -18,15 +18,15 @@ const Layout = () => {
   
     if (isAuthenticated) {
       interval = setInterval(() => {
-        console.log("⏳ Attempting to refresh session...");
+        console.log("Attempting to refresh session...");
   
         refreshSession(undefined)
           .unwrap()
           .then((res) => {
-            console.log("✅ Session refreshed successfully:", res);
+            console.log("Session refreshed successfully:", res);
           })
           .catch((err) => {
-            console.error("❌ Failed to refresh session:", err);
+            console.error("Failed to refresh session:", err);
           });
       }, 40000);  
   
